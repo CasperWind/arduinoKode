@@ -8,32 +8,35 @@
 #include <ArduinoJson.h>
 #include <NTPClient.h>
 #include <EthernetUdp.h>
+#include "pt.h"
 
-#pragma region EthernetSetup
+
 // Ethernet setup
 EthernetClient client;
 EthernetUDP Udp;
 byte mac[] = { 0XA8, 0X61, 0X0A, 0XAE, 0XA8, 0X56 };
-#pragma endregion EthernetSetUp
 
-#pragma region API_SetUp
+
+
 const char* server = "192.168.1.105";
 int portNumber = 80;
 const char* resource = "/alarm/create.php";
-#pragma endregion API_SetUp
 
-#pragma region Time_SetUP
+
+
 //offset 1 houer 
 const long utcOffsetInSeconds = 3600;
 
 NTPClient timeClient(Udp, "0.dk.pool.ntp.org", utcOffsetInSeconds);
 
-#pragma endregion Time_SetUP
+
 
 int totalCount = 0;
 
 //LcdDisplay
 rgb_lcd lcd;
+
+
 
 
 
@@ -46,7 +49,9 @@ bool clear = 1;
 bool IsEthernetOk = 0;
 
 //timer set up
-unsigned long startTime;
+unsigned long startTime = 0;
+
+
 
 bool skipResponseHeaders() {
   // HTTP headers end with an empty line
@@ -139,12 +144,12 @@ void normalAlarm()
 {  
   if(clear == 1){
     lcd.clear();
-    lcd.setRGB(0,0,0);
+    lcd.setColorWhite();
     clear = 0;
     //SendDataToAPI();
     lcd.setRGB(255,0,0);
     lcd.setCursor(0, 0);
-    lcd.print("Door open");
+    lcd.print(F("Door open"));
     lcd.setCursor(0, 1);
   } 
 
@@ -166,7 +171,7 @@ void setup() {
       lcd.setRGB(255,0,0);
       lcd.print(F("NO ETHERNET."));
       lcd.setCursor(0, 1);
-      lcd.print("Reconnecting..");
+      lcd.print(F("Reconnecting.."));
       IsEthernetOk = 1;
     }
     
@@ -179,7 +184,8 @@ void setup() {
   pinMode(button, INPUT);
   timeClient.begin();
   timeClient.update();  
-  Serial.println(timeClient.getFormattedTime());   
+  Serial.println(timeClient.getFormattedTime()); 
+  millis();  
 }
 
 void loop() {
@@ -209,12 +215,12 @@ void loop() {
       if(openOrclosed == 0){
         DoorOpencounter++;
         openOrclosed = 1;
+        lcd.setRGB(255,255,0);
         startTime = millis();
       }
       if(millis() - startTime >= 5000){
         normalAlarm();
       }
-    lcd.setRGB(255,255,0);
     }       
       
   }
